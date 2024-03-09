@@ -4,7 +4,6 @@ import torch.nn as nn
 from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
 
 # Added for customized Processor.
-import math
 import numpy as np
 from typing import Dict
 from transformers.image_utils import PILImageResampling, ChannelDimension
@@ -13,7 +12,7 @@ from transformers.image_transforms import (
     get_resize_output_image_size,
     resize,
 )
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 
 class CLIPImageProcessor_GIT(CLIPImageProcessor):
@@ -97,7 +96,7 @@ class CLIPVisionTower(nn.Module):
 
     @torch.no_grad()
     def forward(self, images):
-        if type(images) is list:
+        if isinstance(images, list):
             image_features = []
             for image in images:
                 image_forward_out = self.vision_tower(

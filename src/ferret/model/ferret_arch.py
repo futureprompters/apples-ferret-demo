@@ -18,7 +18,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 from .multimodal_encoder.builder import build_vision_tower
-import pdb
 
 from ferret.constants import (
     IGNORE_INDEX,
@@ -416,7 +415,7 @@ class FERRETMetaModel:
 
     def get_vision_tower(self):
         vision_tower = getattr(self, "vision_tower", None)
-        if type(vision_tower) is list:
+        if isinstance(vision_tower, list):
             vision_tower = vision_tower[0]
         return vision_tower
 
@@ -603,8 +602,8 @@ class FERRETMetaForCausalLM(ABC):
                 )
             return input_ids, attention_mask, past_key_values, None, labels
 
-        if type(images) is list or images.ndim == 5:
-            assert region_flag == False
+        if isinstance(images, list) or images.ndim == 5:
+            assert not region_flag
             concat_images = torch.cat([image for image in images], dim=0)
             raw_image_features, image_features, region_feature_map = self.encode_images(
                 concat_images, region_flag, region_geo_sampler

@@ -1,8 +1,7 @@
 # Adopted from https://github.com/lm-sys/FastChat. Below is the original copyright:
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import torch
-from torch import nn
 
 import transformers
 from transformers.models.llama.modeling_llama import apply_rotary_pos_emb

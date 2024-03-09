@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 import json
 import logging
 import pathlib
-from typing import Dict, Optional, Sequence, Union, List
+from typing import Dict, Optional, Sequence, List
 
 import torch
 
@@ -29,7 +29,6 @@ import transformers
 
 from ferret.constants import (
     IGNORE_INDEX,
-    IMAGE_TOKEN_INDEX,
     DEFAULT_IMAGE_TOKEN,
     DEFAULT_IM_START_TOKEN,
     DEFAULT_IM_END_TOKEN,
@@ -42,10 +41,8 @@ from ferret.model import *
 from ferret.mm_utils import tokenizer_image_token
 
 from PIL import Image
-import torch.nn as nn
 import random
 import math
-import pdb
 from pycocotools import mask as mask_util
 import numpy as np
 import re
@@ -250,9 +247,7 @@ def safe_save_model_for_hf_trainer(
                     os.path.join(mm_projector_folder, f"{current_folder}.bin"),
                 )
             else:
-                torch.save(
-                    weight_to_save, os.path.join(output_dir, f"mm_projector.bin")
-                )
+                torch.save(weight_to_save, os.path.join(output_dir, "mm_projector.bin"))
         return
 
     if trainer.deepspeed:
@@ -837,34 +832,34 @@ class LazySupervisedDataset(Dataset):
         list_data_dict = []
         for data_path_i, image_folder_i in zip(data_path, image_folders):
             if "vg_object" in data_path_i:
-                logging.warning(f"Loading vg_object data")
+                logging.warning("Loading vg_object data")
                 list_data_dict.append(self.load_vg_object(data_path_i, image_folder_i))
             elif "vg_yesno_object" in data_path_i:
-                logging.warning(f"Loading vg_yesno_object data")
+                logging.warning("Loading vg_yesno_object data")
                 list_data_dict.append(
                     self.load_vg_yesno_object(data_path_i, image_folder_i)
                 )
             elif "vg_attribute" in data_path_i:
-                logging.warning(f"Loading vg_attribute data")
+                logging.warning("Loading vg_attribute data")
                 list_data_dict.append(
                     self.load_vg_attribute(data_path_i, image_folder_i)
                 )
             elif "vg_relation" in data_path_i:
-                logging.warning(f"Loading vg_relation data")
+                logging.warning("Loading vg_relation data")
                 list_data_dict.append(
                     self.load_vg_relation(data_path_i, image_folder_i)
                 )
             elif "vg_region" in data_path_i:
-                logging.warning(f"Loading vg_region data")
+                logging.warning("Loading vg_region data")
                 list_data_dict.append(self.load_vg_region(data_path_i, image_folder_i))
             # elif 'grounded_llava_objects' in data_path_i:
             #     logging.warning(f"Loading grounded_llava_objects data")
             #     list_data_dict.append(self.load_grounded_llava_objects(data_path_i, image_folder_i))
             elif "git_instruction" in data_path_i:
-                logging.warning(f"Loading git_instruction data")
+                logging.warning("Loading git_instruction data")
                 if data_multiple is None:
                     logging.warning(
-                        f"Multiplying git_instruction by 3 times to make it around 100k"
+                        "Multiplying git_instruction by 3 times to make it around 100k"
                     )
                     list_data_dict.append(
                         self.load_git_instruction(data_path_i, image_folder_i) * 3
@@ -874,24 +869,24 @@ class LazySupervisedDataset(Dataset):
                         self.load_git_instruction(data_path_i, image_folder_i)
                     )
             elif "llava_instruct" in data_path_i:
-                logging.warning(f"Loading llava_instruct data")
+                logging.warning("Loading llava_instruct data")
                 list_data_dict.append(self.load_llava(data_path_i, image_folder_i))
             elif "grounded_llava_boxes" in data_path_i:
-                logging.warning(f"Loading grounded_llava_boxes data")
+                logging.warning("Loading grounded_llava_boxes data")
                 list_data_dict.append(
                     self.load_grounded_llava_boxes(data_path_i, image_folder_i)
                 )
             elif "refexp" in data_path_i:
-                logging.warning(f"Loading refexp data")
+                logging.warning("Loading refexp data")
                 list_data_dict.append(self.load_refexp(data_path_i, image_folder_i))
             elif "flickr" in data_path_i:
-                logging.warning(f"Loading flickr data")
+                logging.warning("Loading flickr data")
                 list_data_dict.append(self.load_flickr(data_path_i, image_folder_i))
             elif "objects365" in data_path_i:
-                logging.warning(f"Loading o365 data")
+                logging.warning("Loading o365 data")
                 list_data_dict.append(self.load_objects365(data_path_i, image_folder_i))
             elif "cc3m_595k" in data_path_i:
-                logging.warning(f"Loading cc3m_595k data")
+                logging.warning("Loading cc3m_595k data")
                 list_data_dict.append(self.load_cc3m(data_path_i, image_folder_i))
             else:
                 raise ValueError(f"{data_path_i} Not Supported.")

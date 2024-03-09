@@ -23,13 +23,12 @@ import uvicorn
 from functools import partial
 
 from ferret.constants import WORKER_HEART_BEAT_INTERVAL
-from ferret.utils import build_logger, server_error_msg, pretty_print_semaphore
+from ferret.utils import build_logger, server_error_msg
 from ferret.model.builder import load_pretrained_model
 from ferret.mm_utils import (
     process_images,
     load_image_from_base64,
     tokenizer_image_token,
-    KeywordsStoppingCriteria,
 )
 from ferret.constants import (
     IMAGE_TOKEN_INDEX,
@@ -39,7 +38,6 @@ from ferret.constants import (
 )
 
 # from transformers import TextIteratorStreamer
-from threading import Thread
 
 
 GB = 1 << 30
@@ -186,7 +184,6 @@ class ModelWorker:
         region_masks = params.get("region_masks", None)
 
         images = params.get("images", None)
-        num_image_tokens = 0
         if images is not None and len(images) > 0 and self.is_multimodal:
             if len(images) > 0:
                 if len(images) != prompt.count(DEFAULT_IMAGE_TOKEN):
@@ -206,7 +203,7 @@ class ModelWorker:
                         size=[image_h, image_w],
                     )["pixel_values"]
 
-                if type(images) is list:
+                if isinstance(images, list):
                     images = [
                         image.to(self.model.device, dtype=torch.float16)
                         for image in images
@@ -220,10 +217,6 @@ class ModelWorker:
                         DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
                     )
                 prompt = prompt.replace(DEFAULT_IMAGE_TOKEN, replace_token)
-
-                num_image_tokens = (
-                    prompt.count(replace_token) * model.get_vision_tower().num_patches
-                )
             else:
                 images = None
             image_args = {"images": images}
@@ -245,10 +238,7 @@ class ModelWorker:
             logger.info("No region_masks for this sample.")
             region_masks = None
 
-        l_prompt = len(prompt)
         temperature = float(params.get("temperature", 1.0))
-        top_p = float(params.get("top_p", 1.0))
-        max_context_length = getattr(model.config, "max_position_embeddings", 2048)
         max_new_tokens = min(int(params.get("max_new_tokens", 256)), 1024)
         stop_str = params.get("stop", None)
 

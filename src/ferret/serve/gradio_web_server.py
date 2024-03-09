@@ -27,12 +27,10 @@ import hashlib
 import re
 from copy import deepcopy
 from PIL import ImageDraw, ImageFont
-from gradio import processing_utils
 import numpy as np
 import torch
 import torch.nn.functional as F
 from scipy.ndimage import binary_dilation, binary_erosion
-import pdb
 from ferret.serve.gradio_css import code_highlight_css
 
 DEFAULT_REGION_REFER_TOKEN = "[region]"
@@ -311,8 +309,7 @@ def show_location(sketch_pad, chatbot):
     # chatbot[0] is image.
     text = chatbot[1:]
     for round_i in text:
-        human_input = round_i[0]
-        model_output = round_i[1]
+        model_output = round_i[1]  # round_i[0] == human_input
         # TODO: Difference: vocab representation.
         # pattern = r'\[x\d*=(\d+(?:\.\d+)?), y\d*=(\d+(?:\.\d+)?), x\d*=(\d+(?:\.\d+)?), y\d*=(\d+(?:\.\d+)?)\]'
         pattern = (
@@ -552,7 +549,7 @@ def http_bot(
     logger.info(f"==== request ====\n{pload}")
     if args.add_region_feature:
         pload["region_masks"] = refer_input_state["region_masks_in_prompts"]
-        logger.info(f"==== add region_masks_in_prompts to request ====\n")
+        logger.info("==== add region_masks_in_prompts to request ====\n")
 
     pload["images"] = state.get_images()
     print(f"Input Prompt: {prompt}")
@@ -589,7 +586,7 @@ def http_bot(
                     )
                     return
                 time.sleep(0.03)
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         state.messages[-1][-1] = server_error_msg
         yield (state, state.to_gradio_chatbot()) + (
             disable_btn,
@@ -673,7 +670,7 @@ class ImageMask(gr.components.Image):
 
 
 def draw(input_mode, input, refer_input_state, refer_text_show, imagebox_refer):
-    if type(input) == dict:
+    if isinstance(input, dict):
         image = deepcopy(input["image"])
         mask = deepcopy(input["mask"])
     else:

@@ -1,6 +1,6 @@
 import dataclasses
 from enum import auto, Enum
-from typing import List, Tuple
+from typing import List
 
 VOCAB_IMAGE_W = 1000  # 224
 VOCAB_IMAGE_H = 1000  # 224
@@ -74,8 +74,13 @@ class Conversation:
                 else:
                     ret += role
         elif self.sep_style == SeparatorStyle.LLAMA_2:
-            wrap_sys = lambda msg: f"<<SYS>>\n{msg}\n<</SYS>>\n\n"
-            wrap_inst = lambda msg: f"[INST] {msg} [/INST]"
+
+            def wrap_sys(msg: str) -> str:
+                return f"<<SYS>>\n{msg}\n<</SYS>>\n\n"
+
+            def wrap_inst(msg: str) -> str:
+                return f"[INST] {msg} [/INST]"
+
             ret = ""
 
             for i, (role, message) in enumerate(messages):
