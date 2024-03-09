@@ -17,8 +17,13 @@ import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
 
-from transformers import AutoConfig, AutoModelForCausalLM, \
-                         LlamaConfig, LlamaModel, LlamaForCausalLM
+from transformers import (
+    AutoConfig,
+    AutoModelForCausalLM,
+    LlamaConfig,
+    LlamaModel,
+    LlamaForCausalLM,
+)
 
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
@@ -65,13 +70,30 @@ class FERRETLlamaForCausalLM(LlamaForCausalLM, FERRETMetaForCausalLM):
         images: Optional[torch.FloatTensor] = None,
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
-        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
-        output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_attentions = (
+            output_attentions
+            if output_attentions is not None
+            else self.config.output_attentions
         )
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        output_hidden_states = (
+            output_hidden_states
+            if output_hidden_states is not None
+            else self.config.output_hidden_states
+        )
+        return_dict = (
+            return_dict if return_dict is not None else self.config.use_return_dict
+        )
 
-        input_ids, attention_mask, past_key_values, inputs_embeds, labels = self.prepare_inputs_labels_for_multimodal(input_ids, attention_mask, past_key_values, labels, images, region_masks=region_masks)
+        input_ids, attention_mask, past_key_values, inputs_embeds, labels = (
+            self.prepare_inputs_labels_for_multimodal(
+                input_ids,
+                attention_mask,
+                past_key_values,
+                labels,
+                images,
+                region_masks=region_masks,
+            )
+        )
 
         # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
         outputs = self.model(
@@ -82,7 +104,7 @@ class FERRETLlamaForCausalLM(LlamaForCausalLM, FERRETMetaForCausalLM):
             use_cache=use_cache,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
-            return_dict=return_dict
+            return_dict=return_dict,
         )
 
         hidden_states = outputs[0]
@@ -114,7 +136,12 @@ class FERRETLlamaForCausalLM(LlamaForCausalLM, FERRETMetaForCausalLM):
         )
 
     def prepare_inputs_for_generation(
-        self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
+        self,
+        input_ids,
+        past_key_values=None,
+        attention_mask=None,
+        inputs_embeds=None,
+        **kwargs,
     ):
         if past_key_values:
             input_ids = input_ids[:, -1:]
@@ -134,6 +161,7 @@ class FERRETLlamaForCausalLM(LlamaForCausalLM, FERRETMetaForCausalLM):
             }
         )
         return model_inputs
+
 
 AutoConfig.register("ferret", FERRETConfig)
 AutoModelForCausalLM.register(FERRETConfig, FERRETLlamaForCausalLM)

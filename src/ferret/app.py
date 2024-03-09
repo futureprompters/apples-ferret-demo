@@ -1,14 +1,20 @@
 import threading
 import os
 
+
 def run_controller():
     os.system("python -m src.ferret.serve.controller --host 0.0.0.0 --port 10000")
+
 
 controller_thread = threading.Thread(target=run_controller)
 controller_thread.start()
 
+
 def run_gradio_web_server():
-    os.system("python -m src.ferret.serve.gradio_web_server --controller http://localhost:10000 --model-list-mode reload --add_region_feature")
+    os.system(
+        "python -m src.ferret.serve.gradio_web_server --controller http://localhost:10000 --model-list-mode reload --add_region_feature"
+    )
+
 
 gradio_web_server = threading.Thread(target=run_gradio_web_server)
 gradio_web_server.start()

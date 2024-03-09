@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
+
 # Added for customized Processor.
 import math
 import numpy as np
@@ -13,6 +14,7 @@ from transformers.image_transforms import (
     resize,
 )
 from typing import List, Optional, Tuple, Union
+
 
 class CLIPImageProcessor_GIT(CLIPImageProcessor):
     def resize(
@@ -41,9 +43,17 @@ class CLIPImageProcessor_GIT(CLIPImageProcessor):
         # if "shortest_edge" not in size:
         #     raise ValueError(f"The `size` parameter must contain the key `shortest_edge`. Got {size.keys()}")
         # output_size = get_resize_output_image_size(image, size=size["shortest_edge"], default_to_square=True)
-        output_size = get_resize_output_image_size(image, size=(size["height"], size["width"]), default_to_square=True)
-        return resize(image, size=output_size, resample=resample, data_format=data_format, **kwargs)
-    
+        output_size = get_resize_output_image_size(
+            image, size=(size["height"], size["width"]), default_to_square=True
+        )
+        return resize(
+            image,
+            size=output_size,
+            resample=resample,
+            data_format=data_format,
+            **kwargs,
+        )
+
 
 class CLIPVisionTower(nn.Module):
     def __init__(self, vision_tower, args, delay_load=False):
@@ -53,7 +63,7 @@ class CLIPVisionTower(nn.Module):
 
         self.vision_tower_name = vision_tower
         self.select_layer = args.mm_vision_select_layer
-        self.select_feature = getattr(args, 'mm_vision_select_feature', 'patch')
+        self.select_feature = getattr(args, "mm_vision_select_feature", "patch")
 
         if not delay_load:
             self.load_model()
@@ -61,10 +71,14 @@ class CLIPVisionTower(nn.Module):
             self.cfg_only = CLIPVisionConfig.from_pretrained(self.vision_tower_name)
 
     def load_model(self, vision_tower_path=None):
-        self.image_processor = CLIPImageProcessor_GIT.from_pretrained(self.vision_tower_name)
+        self.image_processor = CLIPImageProcessor_GIT.from_pretrained(
+            self.vision_tower_name
+        )
         if vision_tower_path is not None:
-            self.vision_tower, loading_info = CLIPVisionModel.from_pretrained(vision_tower_path, output_loading_info=True)
-            print('loading_info:', loading_info)
+            self.vision_tower, loading_info = CLIPVisionModel.from_pretrained(
+                vision_tower_path, output_loading_info=True
+            )
+            print("loading_info:", loading_info)
         else:
             self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name)
         self.vision_tower.requires_grad_(False)
@@ -73,12 +87,12 @@ class CLIPVisionTower(nn.Module):
 
     def feature_select(self, image_forward_outs):
         image_features = image_forward_outs.hidden_states[self.select_layer]
-        if self.select_feature == 'patch':
+        if self.select_feature == "patch":
             image_features = image_features[:, 1:]
-        elif self.select_feature == 'cls_patch':
+        elif self.select_feature == "cls_patch":
             image_features = image_features
         else:
-            raise ValueError(f'Unexpected select feature: {self.select_feature}')
+            raise ValueError(f"Unexpected select feature: {self.select_feature}")
         return image_features
 
     @torch.no_grad()
@@ -86,11 +100,17 @@ class CLIPVisionTower(nn.Module):
         if type(images) is list:
             image_features = []
             for image in images:
-                image_forward_out = self.vision_tower(image.to(device=self.device, dtype=self.dtype).unsqueeze(0), output_hidden_states=True)
+                image_forward_out = self.vision_tower(
+                    image.to(device=self.device, dtype=self.dtype).unsqueeze(0),
+                    output_hidden_states=True,
+                )
                 image_feature = self.feature_select(image_forward_out).to(image.dtype)
                 image_features.append(image_feature)
         else:
-            image_forward_outs = self.vision_tower(images.to(device=self.device, dtype=self.dtype), output_hidden_states=True)
+            image_forward_outs = self.vision_tower(
+                images.to(device=self.device, dtype=self.dtype),
+                output_hidden_states=True,
+            )
             image_features = self.feature_select(image_forward_outs).to(images.dtype)
 
         return image_features
