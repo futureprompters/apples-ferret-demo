@@ -1,7 +1,7 @@
 """
 Usage:
 
-python -m ferret.serve.gradio_web_server --controller http://localhost:10000 --add_region_feature
+python -m src.ferret.serve.gradio_web_server --controller http://localhost:10000 --add_region_feature
 """
 
 import argparse
@@ -278,9 +278,11 @@ def clear_history(request: gr.Request):
             {
                 "region_placeholder_tokens": [],
                 "region_coordinates": [],
+                "region_coordinates_raw": [],
                 "region_masks": [],
                 "region_masks_in_prompts": [],
                 "masks": [],
+                "original_image": None,
             },
             [],
             None,
@@ -386,7 +388,7 @@ def add_text(
                 new_state = default_conversation.copy()
                 new_state.first_round = False
                 state = new_state
-                print("First round add image finsihed.")
+                print("First round add image finished.")
 
     state.append_message(state.roles[0], text)
     state.append_message(state.roles[1], None)
@@ -698,12 +700,69 @@ def draw(input_mode, input, refer_input_state, refer_text_show, imagebox_refer):
     else:
         last_mask = refer_input_state["masks"][-1]
 
+    if mask_new.shape != last_mask.shape:
+        print("Mask shape mismatch. Most likely new image has been uploaded.")
+        return (
+            {
+                "region_placeholder_tokens": [],
+                "region_coordinates": [],
+                "region_coordinates_raw": [],
+                "region_masks": [],
+                "region_masks_in_prompts": [],
+                "masks": [],
+                "input_modes": [],
+            },
+            [],
+            image,
+        )
+
     diff_mask = mask_new - last_mask
     if torch.all(diff_mask == 0):
-        print("Init Uploading Images.")
-        return (refer_input_state, refer_text_show, image)
-    else:
-        refer_input_state["masks"].append(mask_new)
+        print(
+            "No masks available. Most likely all of them have been removed by the user or the image has been just uploaded"
+        )
+        return (
+            {
+                "region_placeholder_tokens": [],
+                "region_coordinates": [],
+                "region_coordinates_raw": [],
+                "region_masks": [],
+                "region_masks_in_prompts": [],
+                "masks": [],
+                "input_modes": [],
+            },
+            [],
+            image,
+        )
+    elif torch.any(diff_mask < 0):
+        print(
+            "Detected negative mask. Most likely user has pressed undo button and previous mask has been subtracted from original image, resulting in negative mask."
+        )
+
+        # Remove the last mask since it was 'undone' by the user.
+        refer_input_state["region_placeholder_tokens"].pop()
+        refer_input_state["region_coordinates"].pop()
+        refer_input_state["region_coordinates_raw"].pop()
+        refer_input_state["region_masks"].pop()
+        refer_input_state["masks"].pop()
+        refer_input_state["input_modes"].pop()
+        refer_text_show.pop()
+
+        # Draw all existing regions.
+        imagebox_refer = image.copy()
+        for i in range(len(refer_input_state["region_masks"])):
+            imagebox_refer = draw_box(
+                refer_input_state["region_coordinates_raw"][i],
+                refer_input_state["region_masks"][i],
+                refer_input_state["region_placeholder_tokens"][i],
+                imagebox_refer,
+                refer_input_state["input_modes"][i],
+            )
+
+        return (refer_input_state, refer_text_show, imagebox_refer)
+
+    print("New mask detected. Processing...")
+    refer_input_state["masks"].append(mask_new)
 
     if input_mode == "Point":
         nonzero_points = diff_mask.nonzero()
@@ -753,20 +812,40 @@ def draw(input_mode, input, refer_input_state, refer_text_show, imagebox_refer):
     )
     refer_input_state["region_placeholder_tokens"].append(cur_region_token)
     refer_input_state["region_coordinates"].append(cur_region_coordinates)
+    refer_input_state["region_coordinates_raw"].append(sampled_coor)
     refer_input_state["region_masks"].append(cur_region_masks)
+    refer_input_state["input_modes"].append(input_mode)
     assert (
         len(refer_input_state["region_masks"])
         == len(refer_input_state["region_coordinates"])
+        == len(refer_input_state["region_coordinates_raw"])
         == len(refer_input_state["region_placeholder_tokens"])
+        == len(refer_input_state["input_modes"])
     )
     refer_text_show.append((cur_region_token, ""))
 
-    # Show Parsed Referring.
-    imagebox_refer = draw_box(
-        sampled_coor, cur_region_masks, cur_region_token, imagebox_refer, input_mode
-    )
+    # Draw all existing regions.
+    imagebox_refer = image.copy()
+    for i in range(len(refer_input_state["region_masks"])):
+        imagebox_refer = draw_box(
+            refer_input_state["region_coordinates_raw"][i],
+            refer_input_state["region_masks"][i],
+            refer_input_state["region_placeholder_tokens"][i],
+            imagebox_refer,
+            refer_input_state["input_modes"][i],
+        )
 
     return (refer_input_state, refer_text_show, imagebox_refer)
+
+
+def reset_refer_input_state(refer_input_state, refer_text_show):
+    refer_input_state["region_placeholder_tokens"] = []
+    refer_input_state["region_coordinates"] = []
+    refer_input_state["region_masks"] = []
+    refer_input_state["region_masks_in_prompts"] = []
+    refer_input_state["masks"] = []
+    refer_text_show = []
+    return (refer_input_state, refer_text_show)
 
 
 def build_demo(embed_mode):
@@ -815,9 +894,11 @@ def build_demo(embed_mode):
                     {
                         "region_placeholder_tokens": [],
                         "region_coordinates": [],
+                        "region_coordinates_raw": [],
                         "region_masks": [],
                         "region_masks_in_prompts": [],
                         "masks": [],
+                        "input_modes": [],
                     }
                 )
                 refer_text_show = gr.HighlightedText(
