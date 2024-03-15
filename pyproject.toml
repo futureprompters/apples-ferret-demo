@@ -1,38 +1,50 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "ferret"
 version = "1.0.1"
 description = "Towards GPT-4 like large language and visual assistant."
+authors = ["Future Prompters"]
+homepage = "https://github.com/apple/ml-ferret"
 readme = "README.md"
-requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
 ]
-dependencies = [
-    "einops", "fastapi", "gradio==3.26", "markdown2[all]", "numpy",
-    "requests", "sentencepiece", "tokenizers>=0.12.1",
-    "torch", "torchvision", "uvicorn", "wandb",
-    "shortuuid", "httpx==0.24.0",
-    "deepspeed==0.9.5",
-    "peft==0.4.0",
-    "transformers @ git+https://github.com/huggingface/transformers.git@cae78c46",
-    "accelerate==0.21.0",
-    "bitsandbytes==0.41.0",
-    "scikit-learn==1.2.2",
-    "sentencepiece==0.1.99",
-    "einops==0.6.1", "einops-exts==0.0.4", "timm==0.6.13", "openai",
-    "gradio_client==0.1.2"
-]
 
-[project.urls]
-"Homepage" = "https://github.com/apple/ml-ferret"
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "*"
+torchvision = "*"
+torchaudio = "*"
+pycocotools = "2.0.7"
+protobuf = "3.20.0"
+ninja = "1.11.1.1"
+# flash-attn = { version = "*", allow-prereleases = true } # Custom handling might be required
+einops = "0.7.0"
+fastapi = "0.110.0"
+gradio = "3.26"
+markdown2 = { version = "2.4.13", extras = ["all"] }
+numpy = "1.26.4"
+requests = "2.31.0"
+sentencepiece = "0.2.0"
+tokenizers = "^0.12.1"
+uvicorn = "0.27.1"
+wandb = "0.16.4"
+shortuuid = "1.0.12"
+httpx = "0.24.0"
+deepspeed = "0.9.5"
+peft = "0.4.0"
+accelerate = "0.21.0"
+bitsandbytes = "0.41.0"
+scikit-learn = "1.2.2"
+einops-exts = "0.0.4"
+timm = "0.6.13"
+openai = "1.13.3"
+gradio_client = "0.1.2"
 
-[tool.setuptools.packages.find]
-exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*"]
+[tool.poetry.dev-dependencies]
+pre-commit = ">=3.6.2"
+ruff = "0.3.1"
 
-[tool.wheel]
-exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*"]
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
