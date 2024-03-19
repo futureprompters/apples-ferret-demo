@@ -25,7 +25,7 @@ RUN poetry install --only main
 # Expose secret HF_TOKEN stored in HF Space and
 # download the model stored in HuggingFace Hub
 RUN --mount=type=secret,id=HF_TOKEN,mode=0444,required=true \
-    && poetry run huggingface-cli download FuturePrompters/apples-ferret \
+    poetry run huggingface-cli download FuturePrompters/apples-ferret \
     --token $(cat /run/secrets/HF_TOKEN) \
     --local-dir /home/non-root/app/model
 
