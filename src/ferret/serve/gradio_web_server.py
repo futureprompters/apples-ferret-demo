@@ -212,6 +212,7 @@ def reload_demo(loading_state, request: gr.Request):
 def load_demo_refresh_model_list(request: gr.Request):
     logger.info(f"load_demo. ip: {request.client.host}")
     models = get_model_list()
+    is_model_loaded = len(models) > 0
     state = default_conversation.copy()
     return (
         state,
@@ -223,9 +224,12 @@ def load_demo_refresh_model_list(request: gr.Request):
         gr.Button.update(visible=True),
         gr.Row.update(visible=True),
         gr.Accordion.update(visible=True),
-        # No loading screen (non-empty model list) mock-up for non-GPU instances
-        gr.Column.update(visible=False),
-        gr.Column.update(visible=True),
+        # No loading screen (non-empty model list) mock-up for non-GPU instances:
+        # gr.Column.update(visible=False),
+        # gr.Column.update(visible=True))
+        # Regular loading screen settings:
+        gr.Column.update(visible=not is_model_loaded),
+        gr.Column.update(visible=is_model_loaded),
     )
 
 
