@@ -38,6 +38,7 @@ from ferret.train.ferret_trainer import FERRETTrainer
 
 from ferret import conversation as conversation_lib
 from ferret.model import *
+from ferret.model.language_model.ferret_llama import FERRETLlamaForCausalLM
 from ferret.mm_utils import tokenizer_image_token
 
 from PIL import Image

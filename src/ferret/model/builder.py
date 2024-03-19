@@ -21,6 +21,7 @@ from transformers import (
 )
 import torch
 from ferret.model import *
+from ferret.model.language_model.ferret_llama import FERRETLlamaForCausalLM
 from ferret.constants import (
     DEFAULT_IMAGE_PATCH_TOKEN,
     DEFAULT_IM_START_TOKEN,
