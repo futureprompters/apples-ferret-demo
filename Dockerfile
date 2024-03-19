@@ -1,11 +1,7 @@
 FROM python:3.10-bookworm
 
-# Install git & git-lfs
-RUN apt update && apt -y install git curl
-
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
-    && apt install git-lfs \
-    && git lfs install
+# HuggingFace Access Token for downloading the models
+ARG HF_TOKEN
 
 # Switch to non-root user
 RUN useradd -m -u 1000 non-root
@@ -25,6 +21,12 @@ RUN pip install --no-cache-dir --upgrade --user pip poetry
 
 # Install dependencies defined in pyproject.toml
 RUN poetry install --only main
+
+# Download the model stored in HuggingFace Hub
+# Use secret HF_TOKEN stored in HF Space
+RUN poetry run huggingface-cli download FuturePrompters/apples-ferret \
+    --token $(cat /run/secrets/HF_TOKEN) \
+    --local-dir /home/non-root/app/model
 
 # Run the ferret
 EXPOSE 7860

@@ -40,6 +40,7 @@ einops-exts = "0.0.4"
 timm = "0.6.13"
 openai = "1.13.3"
 gradio_client = "0.1.2"
+huggingface_hub = {version = "0.21.4", extras = ["cli"]}
 
 [tool.poetry.dev-dependencies]
 pre-commit = ">=3.6.2"
