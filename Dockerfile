@@ -22,8 +22,10 @@ RUN pip install --no-cache-dir --upgrade --user pip poetry
 # Install dependencies defined in pyproject.toml
 RUN poetry install --only main
 
+# Expose secret HF_TOKEN stored in HF Space
+RUN --mount=type=secret,id=HF_TOKEN,mode=0444,required=true
+
 # Download the model stored in HuggingFace Hub
-# Use secret HF_TOKEN stored in HF Space
 RUN poetry run huggingface-cli download FuturePrompters/apples-ferret \
     --token $(cat /run/secrets/HF_TOKEN) \
     --local-dir /home/non-root/app/model
