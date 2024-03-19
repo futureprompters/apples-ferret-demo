@@ -288,7 +288,7 @@ def clear_history(request: gr.Request):
                 "region_masks": [],
                 "region_masks_in_prompts": [],
                 "masks": [],
-                "original_image": None,
+                "input_modes": [],
             },
             [],
             None,
@@ -308,7 +308,7 @@ def clear_inputs(request: gr.Request):
             "region_masks": [],
             "region_masks_in_prompts": [],
             "masks": [],
-            "original_image": None,
+            "input_modes": [],
         },
         [],
         None,
@@ -871,6 +871,7 @@ def reset_refer_input_state(refer_input_state, refer_text_show):
     refer_input_state["region_masks"] = []
     refer_input_state["region_masks_in_prompts"] = []
     refer_input_state["masks"] = []
+    refer_input_state["input_modes"] = []
     refer_text_show = []
     return (refer_input_state, refer_text_show)
 
