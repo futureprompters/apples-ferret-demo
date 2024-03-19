@@ -20,6 +20,7 @@ jobs:
       - name: Push to HuggingFace Spaces
         env:
           HF_USERNAME: ${{ vars.HF_USERNAME }}
-          SPACE_NAME: ${{ vars.SPACE_NAME }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME main
+          SPACE_USERNAME: ${{ vars.SPACE_USERNAME }}
+          SPACE_NAME: ${{ vars.SPACE_NAME }}
+        run: git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$SPACE_USERNAME/$SPACE_NAME main

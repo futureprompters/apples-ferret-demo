@@ -19,8 +19,12 @@ def run_gradio_web_server():
 gradio_web_server = threading.Thread(target=run_gradio_web_server)
 gradio_web_server.start()
 
-# def run_model_worker():
-#     os.system("CUDA_VISIBLE_DEVICES=0 python -m ferret.serve.model_worker --host 0.0.0.0 --controller http://localhost:10000 --port 40000 --worker http://localhost:40000 --model-path ./model/ferret-7b-v1-3 --add_region_feature")
 
-# model_worker = threading.Thread(target=run_model_worker)
-# model_worker.start()
+def run_model_worker():
+    os.system(
+        "CUDA_VISIBLE_DEVICES=0 python -m ferret.serve.model_worker --host 0.0.0.0 --controller http://localhost:10000 --port 40000 --worker http://localhost:40000 --model-path ./model/ferret-7b-v1-3 --add_region_feature"
+    )
+
+
+model_worker = threading.Thread(target=run_model_worker)
+model_worker.start()
