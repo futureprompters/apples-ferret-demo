@@ -75,8 +75,6 @@ def generate_mask_for_feature(coor, raw_w, raw_h, mask=None):
         coor_mask[coor[0] : coor[2] + 1, coor[1] : coor[3] + 1] = 1
         if mask is not None:
             coor_mask = coor_mask * mask
-    # coor_mask = torch.from_numpy(coor_mask)
-    # pdb.set_trace()
     assert len(coor_mask.nonzero()) != 0
     return coor_mask.tolist()
 
@@ -189,24 +187,25 @@ function() {
 """
 
 
-def load_demo(url_params, request: gr.Request):
-    logger.info(f"load_demo. ip: {request.client.host}. params: {url_params}")
+def reload_demo(loading_state, request: gr.Request):
+    models = get_model_list()
+    is_model_loaded = len(models) > 0
 
-    dropdown_update = gr.Dropdown.update(visible=True)
-    if "model" in url_params:
-        model = url_params["model"]
-        if model in models:
-            dropdown_update = gr.Dropdown.update(value=model, visible=True)
+    new_state = {
+        "loading_wheel": True,
+        "additional_info": loading_state["loading_wheel"],
+        "model_loaded": is_model_loaded,
+    }
 
-    state = default_conversation.copy()
     return (
-        state,
-        dropdown_update,
-        gr.Chatbot.update(visible=True),
-        gr.Textbox.update(visible=True),
-        gr.Button.update(visible=True),
-        gr.Row.update(visible=True),
-        gr.Accordion.update(visible=True),
+        gr.Column.update(visible=not is_model_loaded),
+        gr.Column.update(visible=is_model_loaded),
+        gr.HTML.update(visible=True),
+        gr.HTML.update(visible=new_state["additional_info"]),
+        new_state,
+        gr.Dropdown.update(
+            choices=models, value=models[0] if len(models) > 0 else "Loading models..."
+        ),
     )
 
 
@@ -216,12 +215,17 @@ def load_demo_refresh_model_list(request: gr.Request):
     state = default_conversation.copy()
     return (
         state,
-        gr.Dropdown.update(choices=models, value=models[0] if len(models) > 0 else ""),
+        gr.Dropdown.update(
+            choices=models, value=models[0] if len(models) > 0 else "Loading models..."
+        ),
         gr.Chatbot.update(visible=True),
         gr.Textbox.update(visible=True),
         gr.Button.update(visible=True),
         gr.Row.update(visible=True),
         gr.Accordion.update(visible=True),
+        # No loading screen (non-empty model list) mock-up for non-GPU instances
+        gr.Column.update(visible=False),
+        gr.Column.update(visible=True),
     )
 
 
@@ -285,6 +289,26 @@ def clear_history(request: gr.Request):
             [],
             None,
         )
+    )
+
+
+def clear_inputs(request: gr.Request):
+    state = default_conversation.copy()
+    return (
+        state,
+        None,
+        {
+            "region_placeholder_tokens": [],
+            "region_coordinates": [],
+            "region_coordinates_raw": [],
+            "region_masks": [],
+            "region_masks_in_prompts": [],
+            "masks": [],
+            "original_image": None,
+        },
+        [],
+        None,
+        None,
     )
 
 
@@ -464,32 +488,6 @@ def http_bot(
     if len(state.messages) == state.offset + 2:
         # First round of conversation
         template_name = "ferret_v1"
-        # Below is LLaVA's original templates.
-        # if "llava" in model_name.lower():
-        #     if 'llama-2' in model_name.lower():
-        #         template_name = "llava_llama_2"
-        #     elif "v1" in model_name.lower():
-        #         if 'mmtag' in model_name.lower():
-        #             template_name = "v1_mmtag"
-        #         elif 'plain' in model_name.lower() and 'finetune' not in model_name.lower():
-        #             template_name = "v1_mmtag"
-        #         else:
-        #             template_name = "llava_v1"
-        #     elif "mpt" in model_name.lower():
-        #         template_name = "mpt"
-        #     else:
-        #         if 'mmtag' in model_name.lower():
-        #             template_name = "v0_mmtag"
-        #         elif 'plain' in model_name.lower() and 'finetune' not in model_name.lower():
-        #             template_name = "v0_mmtag"
-        #         else:
-        #             template_name = "llava_v0"
-        # elif "mpt" in model_name:
-        #     template_name = "mpt_text"
-        # elif "llama-2" in model_name:
-        #     template_name = "llama_2"
-        # else:
-        #     template_name = "vicuna_v1"
         new_state = conv_templates[template_name].copy()
         new_state.append_message(new_state.roles[0], state.messages[-2][1])
         new_state.append_message(new_state.roles[1], None)
@@ -647,11 +645,42 @@ pre {
 """
 )
 
-Instructions = """
-Instructions:
+instructions = """
+### Instructions:
 1. Select a 'Referring Input Type'
 2. Draw on the image to refer to a region/point.
 3. Copy the region id from 'Referring Input Type' to refer to a region in your chat.
+"""
+
+buggy_drawing_note = """
+Please note that due to the **diverse nature of web browsers** and their unique implementations, you might encounter occasional inconsistencies or **unexpected behavior with the drawing feature** across different platforms.
+We are committed to providing a seamless experience and are continuously working to address these challenges. Your understanding and patience are greatly appreciated.
+"""
+
+loading_screen_html = """
+<h1 style="text-align: center;">Loading models. Please wait.</h1>
+<h1 style="text-align: center;">Refresh the page in a moment.</h1>
+"""
+
+loading_wheel_html = """
+<style>
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100h;
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<div class="center">
+    <div class="spinner-border" style="width: 10rem; height: 10rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+"""
+
+additional_info_html = """
+<h1 style="text-align: center;">Still loading...</h1>
 """
 
 
@@ -766,17 +795,14 @@ def draw(input_mode, input, refer_input_state, refer_text_show, imagebox_refer):
         nonzero_points_avg_x = torch.median(nonzero_points[:, 0])
         nonzero_points_avg_y = torch.median(nonzero_points[:, 1])
         sampled_coor = [nonzero_points_avg_x, nonzero_points_avg_y]
-        # pdb.set_trace()
         cur_region_masks = generate_mask_for_feature(
             sampled_coor, raw_w=img_width, raw_h=img_height
         )
     elif input_mode == "Box" or input_mode == "Sketch":
-        # pdb.set_trace()
         x1x2 = diff_mask.max(1)[0].nonzero()[:, 0]
         y1y2 = diff_mask.max(0)[0].nonzero()[:, 0]
         y1, y2 = y1y2.min(), y1y2.max()
         x1, x2 = x1x2.min(), x1x2.max()
-        # pdb.set_trace()
         sampled_coor = [x1, y1, x2, y2]
         if input_mode == "Box":
             cur_region_masks = generate_mask_for_feature(
@@ -845,7 +871,7 @@ def reset_refer_input_state(refer_input_state, refer_text_show):
     return (refer_input_state, refer_text_show)
 
 
-def build_demo(embed_mode):
+def build_demo(embed_mode, is_model_loaded):
     textbox = gr.Textbox(
         show_label=False,
         placeholder="Enter text and press ENTER",
@@ -854,276 +880,291 @@ def build_demo(embed_mode):
     )
     with gr.Blocks(title="FERRET", theme=gr.themes.Base(), css=css) as demo:
         state = gr.State()
+        loading_state = gr.State(
+            {"loading_wheel": False, "additional_info": False, "model_loaded": False}
+        )
 
-        if not embed_mode:
-            gr.Markdown(title_markdown)
-            gr.Markdown(Instructions)
+        with gr.Column(visible=not is_model_loaded) as loading_panel:
+            gr.HTML(loading_screen_html)
+            reload_button = gr.Button(
+                "Reload", interactive=True, show_label=False, container=False
+            )
+            loading_wheel = gr.HTML(loading_wheel_html, visible=False)
+            additional_info = gr.HTML(additional_info_html, visible=False)
 
-        with gr.Row():
-            with gr.Column(scale=4):
-                with gr.Row(elem_id="model_selector_row"):
-                    model_selector = gr.Dropdown(
-                        choices=models,
-                        value=models[0] if len(models) > 0 else "",
+        with gr.Column(visible=is_model_loaded) as main_panel:
+            if not embed_mode:
+                gr.Markdown(title_markdown)
+                gr.Markdown(instructions)
+                gr.Markdown(buggy_drawing_note)
+
+            with gr.Row():
+                with gr.Column(scale=4):
+                    with gr.Row(elem_id="model_selector_row"):
+                        model_selector = gr.Dropdown(
+                            choices=models,
+                            value=models[0] if len(models) > 0 else "",
+                            interactive=True,
+                            show_label=False,
+                            container=False,
+                        )
+
+                    clear_input_btn = gr.Button(
+                        value="Clear Inputs",
                         interactive=True,
                         show_label=False,
                         container=False,
                     )
-
-                original_image = gr.Image(type="pil", visible=False)
-                image_process_mode = gr.Radio(
-                    ["Raw+Processor", "Crop", "Resize", "Pad"],
-                    value="Raw+Processor",
-                    label="Preprocess for non-square image",
-                    visible=False,
-                )
-
-                # Added for any-format input.
-                sketch_pad = ImageMask(
-                    label="Image & Sketch", type="pil", elem_id="img2text"
-                )
-                refer_input_mode = gr.Radio(
-                    ["Point", "Box", "Sketch"],
-                    value="Point",
-                    label="Referring Input Type",
-                )
-                refer_input_state = gr.State(
-                    {
-                        "region_placeholder_tokens": [],
-                        "region_coordinates": [],
-                        "region_coordinates_raw": [],
-                        "region_masks": [],
-                        "region_masks_in_prompts": [],
-                        "masks": [],
-                        "input_modes": [],
-                    }
-                )
-                refer_text_show = gr.HighlightedText(
-                    value=[], label="Referring Input Cache"
-                )
-
-                imagebox_refer = gr.Image(type="pil", label="Parsed Referring Input")
-                imagebox_output = gr.Image(type="pil", label="Output Vis")
-
-                cur_dir = os.path.dirname(os.path.abspath(__file__))
-                gr.Examples(
-                    examples=[
-                        # [f"{cur_dir}/examples/harry-potter-hogwarts.jpg", "What is in [region0]? And what do people use it for?"],
-                        # [f"{cur_dir}/examples/ingredients.jpg", "What objects are in [region0] and [region1]?"],
-                        # [f"{cur_dir}/examples/extreme_ironing.jpg", "What is unusual about this image? And tell me the coordinates of mentioned objects."],
-                        [
-                            f"{cur_dir}/examples/ferret.jpg",
-                            "What's the relationship between object [region0] and object [region1]?",
-                        ],
-                        [
-                            f"{cur_dir}/examples/waterview.jpg",
-                            "What are the things I should be cautious about when I visit here? Tell me the coordinates in response.",
-                        ],
-                        [
-                            f"{cur_dir}/examples/flickr_9472793441.jpg",
-                            "Describe the image in details.",
-                        ],
-                        # [f"{cur_dir}/examples/coco_000000281759.jpg", "What are the locations of the woman wearing a blue dress, the woman in flowery top, the girl in purple dress, the girl wearing green shirt?"],
-                        [
-                            f"{cur_dir}/examples/room_planning.jpg",
-                            "How to improve the design of the given room?",
-                        ],
-                        [
-                            f"{cur_dir}/examples/make_sandwitch.jpg",
-                            "How can I make a sandwich with available ingredients?",
-                        ],
-                        [
-                            f"{cur_dir}/examples/bathroom.jpg",
-                            "What is unusual about this image?",
-                        ],
-                        [
-                            f"{cur_dir}/examples/kitchen.png",
-                            "Is the object a man or a chicken? Explain the reason.",
-                        ],
-                    ],
-                    inputs=[sketch_pad, textbox],
-                )
-
-                with gr.Accordion(
-                    "Parameters", open=False, visible=False
-                ) as parameter_row:
-                    temperature = gr.Slider(
-                        minimum=0.0,
-                        maximum=1.0,
-                        value=0.2,
-                        step=0.1,
-                        interactive=True,
-                        label="Temperature",
-                    )
-                    top_p = gr.Slider(
-                        minimum=0.0,
-                        maximum=1.0,
-                        value=0.7,
-                        step=0.1,
-                        interactive=True,
-                        label="Top P",
-                    )
-                    max_output_tokens = gr.Slider(
-                        minimum=0,
-                        maximum=1024,
-                        value=512,
-                        step=64,
-                        interactive=True,
-                        label="Max output tokens",
+                    original_image = gr.Image(type="pil", visible=False)
+                    image_process_mode = gr.Radio(
+                        ["Raw+Processor", "Crop", "Resize", "Pad"],
+                        value="Raw+Processor",
+                        label="Preprocess for non-square image",
+                        visible=False,
                     )
 
-            with gr.Column(scale=5):
-                chatbot = gr.Chatbot(
-                    elem_id="chatbot", label="FERRET", visible=False
-                ).style(height=750)
-                with gr.Row():
-                    with gr.Column(scale=8):
-                        textbox.render()
-                    with gr.Column(scale=1, min_width=60):
-                        submit_btn = gr.Button(value="Submit", visible=False)
-                with gr.Row(visible=False) as button_row:
-                    upvote_btn = gr.Button(value="👍  Upvote", interactive=False)
-                    downvote_btn = gr.Button(value="👎  Downvote", interactive=False)
-                    # flag_btn = gr.Button(value="⚠️  Flag", interactive=False)
-                    # stop_btn = gr.Button(value="⏹️  Stop Generation", interactive=False)
-                    regenerate_btn = gr.Button(
-                        value="🔄  Regenerate", interactive=False
+                    # Added for any-format input.
+                    sketch_pad = ImageMask(
+                        label="Image & Sketch", type="pil", elem_id="img2text"
                     )
-                    clear_btn = gr.Button(value="🗑️  Clear history", interactive=True)
-                    location_btn = gr.Button(
-                        value="🪄 Show location", interactive=False
+                    refer_input_mode = gr.Radio(
+                        ["Point", "Box", "Sketch"],
+                        value="Point",
+                        label="Referring Input Type",
                     )
-                # with gr.Row():
-                #     gr.Markdown("Generative Models Integration")
-                # with gr.Row():
-                #     gr.Dropdown(
-                #         choices=["OpenAI"],
-                #         value="OpenAI",
-                #         label="Model Selector",
-                #         visible=True)
-                # with gr.Row():
-                #     gr.Textbox(placeholder="Enter your OpenAI API Key", visible=True, lines=1, label="OpenAI API Key")
-                # with gr.Row():
-                #     with gr.Column(scale=8):
-                #         gr.Textbox(placeholder="Enter your prompt to generate image", label="Prompt", visible=True)
-                #     with gr.Column(scale=1, min_width=60):
-                #         submit_image_generation_prompt_btn = gr.Button(value="Generate", visible=True) # Add listener to generate image from prompt.
-                # with gr.Row():
-                #     gr.Image(type="pil", label="Generated Image", visible=True, label="Generated Image")
-                # with gr.Row():
-                #     use_generated_image_btn = gr.Button(value="Use generated image", visible=True) # Add listener to use the generated image as input image.
+                    refer_input_state = gr.State(
+                        {
+                            "region_placeholder_tokens": [],
+                            "region_coordinates": [],
+                            "region_coordinates_raw": [],
+                            "region_masks": [],
+                            "region_masks_in_prompts": [],
+                            "masks": [],
+                            "input_modes": [],
+                        }
+                    )
+                    refer_text_show = gr.HighlightedText(
+                        value=[], label="Referring Input Cache"
+                    )
 
-        if not embed_mode:
-            gr.Markdown(tos_markdown)
-            gr.Markdown(learn_more_markdown)
-        url_params = gr.JSON(visible=False)
+                    imagebox_refer = gr.Image(
+                        type="pil", label="Parsed Referring Input"
+                    )
+                    imagebox_output = gr.Image(type="pil", label="Output Vis")
 
-        # Register listeners
-        btn_list = [upvote_btn, downvote_btn, location_btn, regenerate_btn, clear_btn]
-        upvote_btn.click(
-            upvote_last_response,
-            [state, model_selector],
-            [textbox, upvote_btn, downvote_btn, location_btn],
-        )
-        downvote_btn.click(
-            downvote_last_response,
-            [state, model_selector],
-            [textbox, upvote_btn, downvote_btn, location_btn],
-        )
-        # flag_btn.click(flag_last_response,
-        #     [state, model_selector], [textbox, upvote_btn, downvote_btn, flag_btn])
-        regenerate_btn.click(
-            regenerate,
-            [state, image_process_mode],
-            [state, chatbot, textbox] + btn_list,
-        ).then(
-            http_bot,
-            [
-                state,
-                model_selector,
-                temperature,
-                top_p,
-                max_output_tokens,
-                refer_input_state,
-            ],
-            [state, chatbot] + btn_list,
-        )
-        clear_btn.click(
-            clear_history,
-            None,
-            [state, chatbot, textbox, imagebox_output, original_image]
-            + btn_list
-            + [sketch_pad, refer_input_state, refer_text_show, imagebox_refer],
-        )
-        location_btn.click(
-            show_location,
-            [sketch_pad, chatbot],
-            [imagebox_output, chatbot, location_btn],
-        )
+                    cur_dir = os.path.dirname(os.path.abspath(__file__))
+                    gr.Examples(
+                        examples=[
+                            [
+                                f"{cur_dir}/examples/ferret.jpg",
+                                "What's the relationship between object [region0] and object [region1]?",
+                            ],
+                            [
+                                f"{cur_dir}/examples/waterview.jpg",
+                                "What are the things I should be cautious about when I visit here? Tell me the coordinates in response.",
+                            ],
+                            [
+                                f"{cur_dir}/examples/flickr_9472793441.jpg",
+                                "Describe the image in details.",
+                            ],
+                            [
+                                f"{cur_dir}/examples/room_planning.jpg",
+                                "How to improve the design of the given room?",
+                            ],
+                            [
+                                f"{cur_dir}/examples/make_sandwitch.jpg",
+                                "How can I make a sandwich with available ingredients?",
+                            ],
+                            [
+                                f"{cur_dir}/examples/bathroom.jpg",
+                                "What is unusual about this image?",
+                            ],
+                            [
+                                f"{cur_dir}/examples/kitchen.png",
+                                "Is the object a man or a chicken? Explain the reason.",
+                            ],
+                        ],
+                        inputs=[sketch_pad, textbox],
+                    )
 
-        textbox.submit(
-            add_text,
-            [state, textbox, image_process_mode, original_image, sketch_pad],
-            [state, chatbot, textbox, original_image] + btn_list,
-        ).then(
-            http_bot,
-            [
-                state,
-                model_selector,
-                temperature,
-                top_p,
-                max_output_tokens,
-                refer_input_state,
-            ],
-            [state, chatbot] + btn_list,
-        )
+                    with gr.Accordion(
+                        "Parameters", open=False, visible=False
+                    ) as parameter_row:
+                        temperature = gr.Slider(
+                            minimum=0.0,
+                            maximum=1.0,
+                            value=0.2,
+                            step=0.1,
+                            interactive=True,
+                            label="Temperature",
+                        )
+                        top_p = gr.Slider(
+                            minimum=0.0,
+                            maximum=1.0,
+                            value=0.7,
+                            step=0.1,
+                            interactive=True,
+                            label="Top P",
+                        )
+                        max_output_tokens = gr.Slider(
+                            minimum=0,
+                            maximum=1024,
+                            value=512,
+                            step=64,
+                            interactive=True,
+                            label="Max output tokens",
+                        )
 
-        submit_btn.click(
-            add_text,
-            [state, textbox, image_process_mode, original_image, sketch_pad],
-            [state, chatbot, textbox, original_image] + btn_list,
-        ).then(
-            http_bot,
-            [
-                state,
-                model_selector,
-                temperature,
-                top_p,
-                max_output_tokens,
-                refer_input_state,
-            ],
-            [state, chatbot] + btn_list,
-        )
+                with gr.Column(scale=5):
+                    chatbot = gr.Chatbot(
+                        elem_id="chatbot", label="FERRET", visible=False
+                    ).style(height=750)
+                    with gr.Row():
+                        with gr.Column(scale=8):
+                            textbox.render()
+                        with gr.Column(scale=1, min_width=60):
+                            submit_btn = gr.Button(value="Submit", visible=False)
+                    with gr.Row(visible=False) as button_row:
+                        upvote_btn = gr.Button(value="👍  Upvote", interactive=False)
+                        downvote_btn = gr.Button(
+                            value="👎  Downvote", interactive=False
+                        )
+                        regenerate_btn = gr.Button(
+                            value="🔄  Regenerate", interactive=False
+                        )
+                        clear_btn = gr.Button(
+                            value="🗑️  Clear history", interactive=True
+                        )
+                        location_btn = gr.Button(
+                            value="🪄 Show location", interactive=False
+                        )
 
-        sketch_pad.edit(
-            draw,
-            inputs=[
-                refer_input_mode,
-                sketch_pad,
-                refer_input_state,
-                refer_text_show,
-                imagebox_refer,
-            ],
-            outputs=[refer_input_state, refer_text_show, imagebox_refer],
-            queue=True,
-        )
+            if not embed_mode:
+                gr.Markdown(tos_markdown)
+                gr.Markdown(learn_more_markdown)
 
-        if args.model_list_mode == "once":
-            demo.load(
-                load_demo,
-                [url_params],
+            # Register listeners
+            btn_list = [
+                upvote_btn,
+                downvote_btn,
+                location_btn,
+                regenerate_btn,
+                clear_btn,
+            ]
+            upvote_btn.click(
+                upvote_last_response,
+                [state, model_selector],
+                [textbox, upvote_btn, downvote_btn, location_btn],
+            )
+            downvote_btn.click(
+                downvote_last_response,
+                [state, model_selector],
+                [textbox, upvote_btn, downvote_btn, location_btn],
+            )
+            # flag_btn.click(flag_last_response,
+            #     [state, model_selector], [textbox, upvote_btn, downvote_btn, flag_btn])
+            regenerate_btn.click(
+                regenerate,
+                [state, image_process_mode],
+                [state, chatbot, textbox] + btn_list,
+            ).then(
+                http_bot,
                 [
                     state,
                     model_selector,
-                    chatbot,
-                    textbox,
-                    submit_btn,
-                    button_row,
-                    parameter_row,
+                    temperature,
+                    top_p,
+                    max_output_tokens,
+                    refer_input_state,
                 ],
-                _js=get_window_url_params,
+                [state, chatbot] + btn_list,
             )
-        elif args.model_list_mode == "reload":
+            clear_btn.click(
+                clear_history,
+                None,
+                [state, chatbot, textbox, imagebox_output, original_image]
+                + btn_list
+                + [sketch_pad, refer_input_state, refer_text_show, imagebox_refer],
+            )
+            location_btn.click(
+                show_location,
+                [sketch_pad, chatbot],
+                [imagebox_output, chatbot, location_btn],
+            )
+
+            textbox.submit(
+                add_text,
+                [state, textbox, image_process_mode, original_image, sketch_pad],
+                [state, chatbot, textbox, original_image] + btn_list,
+            ).then(
+                http_bot,
+                [
+                    state,
+                    model_selector,
+                    temperature,
+                    top_p,
+                    max_output_tokens,
+                    refer_input_state,
+                ],
+                [state, chatbot] + btn_list,
+            )
+
+            submit_btn.click(
+                add_text,
+                [state, textbox, image_process_mode, original_image, sketch_pad],
+                [state, chatbot, textbox, original_image] + btn_list,
+            ).then(
+                http_bot,
+                [
+                    state,
+                    model_selector,
+                    temperature,
+                    top_p,
+                    max_output_tokens,
+                    refer_input_state,
+                ],
+                [state, chatbot] + btn_list,
+            )
+
+            sketch_pad.edit(
+                draw,
+                inputs=[
+                    refer_input_mode,
+                    sketch_pad,
+                    refer_input_state,
+                    refer_text_show,
+                    imagebox_refer,
+                ],
+                outputs=[refer_input_state, refer_text_show, imagebox_refer],
+                queue=True,
+            )
+
+            clear_input_btn.click(
+                clear_inputs,
+                None,
+                [
+                    state,
+                    sketch_pad,
+                    refer_input_state,
+                    refer_text_show,
+                    imagebox_refer,
+                    original_image,
+                ],
+            )
+
+            reload_button.click(
+                reload_demo,
+                loading_state,
+                [
+                    loading_panel,
+                    main_panel,
+                    loading_wheel,
+                    additional_info,
+                    loading_state,
+                    model_selector,
+                ],
+            )
+
             demo.load(
                 load_demo_refresh_model_list,
                 None,
@@ -1135,10 +1176,10 @@ def build_demo(embed_mode):
                     submit_btn,
                     button_row,
                     parameter_row,
+                    loading_panel,
+                    main_panel,
                 ],
             )
-        else:
-            raise ValueError(f"Unknown model list mode: {args.model_list_mode}")
 
     return demo
 
@@ -1149,9 +1190,6 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int)
     parser.add_argument("--controller-url", type=str, default="http://localhost:21001")
     parser.add_argument("--concurrency-count", type=int, default=8)
-    parser.add_argument(
-        "--model-list-mode", type=str, default="once", choices=["once", "reload"]
-    )
     parser.add_argument("--share", action="store_true")
     parser.add_argument("--moderate", action="store_true")
     parser.add_argument("--embed", action="store_true")
@@ -1162,7 +1200,7 @@ if __name__ == "__main__":
     models = get_model_list()
 
     logger.info(args)
-    demo = build_demo(args.embed)
+    demo = build_demo(args.embed, is_model_loaded=len(models) > 0)
     demo.queue(
         concurrency_count=args.concurrency_count, status_update_rate=10, api_open=False
     ).launch(server_name=args.host, server_port=args.port, share=args.share)
