@@ -29,179 +29,105 @@ app_port: 7860
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![Contributors][contributors-shield]][contributors-url]
+<!-- [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/repo_name">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/futureprompters/apples-ferret-demo">
+    <img src="images/logo-fp-color-black.png" alt="Logo" width="430" height="135">
   </a>
-
-<h3 align="center">project_title</h3>
+<br/>
+<br/>
+<h1 align="center">Apple's Ferret Demo</h1>
 
   <p align="center">
-    project_description
+    The project brings Ferret, Apple's state-of-the-art multimodal LLM, to Hugging Face Spaces for interactive visual and textual analysis.
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://huggingface.co/spaces/FuturePrompters/apples-ferret"><strong>Play with the Demo at 🤗 HF Spaces »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://github.com/apple/ml-ferret">🦦 Ferret's Repo</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+    <a href="https://arxiv.org/abs/2310.07704">Paper</a>
   </p>
 </div>
 
-
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
-
-<!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+Our project brings **Apple's groundbreaking multimodal large language model (MLLM), Ferret**, to life on 🤗 Hugging Face Spaces. Developed in collaboration between Apple and Cornell University researchers, Ferret represents a **significant leap** in AI's ability to engage with and understand visual content at an unprecedented granularity. Leveraging a **hybrid region representation and a spatial-aware visual sampler**, Ferret excels at fine-grained referring and grounding tasks, making it possible to refer to and **ground anything, anywhere in an image**, with any form of referring expression.
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+By deploying Ferret, we aim to **explore and demonstrate its unique capabilities** in creating more nuanced and contextually rich interactions between AI and visual content. This includes **identifying objects**, **understanding relationships within images**, and **grounding textual concepts to specific visual elements**. Our implementation on 🤗 Hugging Face Spaces allows users to interact with Ferret in real-time, providing a tangible demonstration of its potential to revolutionize how AI perceives and discusses visual information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### Key Features of Our Project:
 
+- **Real-Time Interaction**: Users can directly interact with Ferret through a Gradio-based web interface, enabling instant visual and textual dialogues.
+- **Demonstration of Advanced AI**: Showcases Ferret's hybrid approach to visual and textual data processing, blending computer vision and natural language processing for enriched multimodal communication.
+- **Accessibility**: By hosting Ferret on Hugging Face Spaces, we provide easy access to this advanced technology, fostering broader experimentation and understanding within the AI community.
+- **Educational Tool**: Acts as a resource for researchers, developers, and enthusiasts to study and understand the intricacies of multimodal AI systems, particularly in referring and grounding tasks.
 
+Give it a shot and play with the Ferret on [🤗 HF Spaces](https://huggingface.co/spaces/FuturePrompters/apples-ferret)
 
-### Built With
+https://github.com/futureprompters/apples-ferret-demo/blob/main/images/ferret-demo.mp4
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
+## Technical Details
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+This section outlines the key technical aspects of our Ferret deployment, including the generation of model weights, model foundations, and the hardware requirements for using the current weight configurations.
 
+### Generation of Weights and Storage
+- **Weight Generation**: We followed Apple's guidelines to generate Ferret's weights, involving the application of delta weights to Vicuna's base weights to produce the final model. This process ensures that Ferret inherits Vicuna's robust linguistic capabilities while integrating its own advanced visual understanding.
+- **Storage Location**: The generated model weights are hosted on Hugging Face at [FuturePrompters/apples-ferret](https://huggingface.co/FuturePrompters/apples-ferret), ensuring easy access for deployment and experimentation.
+- **Reproduce**: In order to reproduce the weights manually, one may [use script](https://huggingface.co/FuturePrompters/apples-ferret/blob/main/ferret-7b-v1-3/reproduce.sh) prepared for this occassion.
 
-### Model weights
+### Model Foundations
+Ferret is built upon the LLaVA v.1.3 framework, leveraging Vicuna v.1.3 for its linguistic processing. This foundation provides Ferret with a sophisticated understanding of language, combined with its unique visual comprehension capabilities. It's important to note that the model, as configured, requires a GPU to run effectively due to the computational demands of processing multimodal data.
 
-Script for model reproduction, i.e. applying delta weights to Vicuna weights is described in [models/ferret-7b-v1-3](./models/ferret-7b-v1-3).
+## Local Deployment
 
-### The demo app
-
-To use the demo run the [app.py](./src/ferret/app.py).
-
-
-
-```
-conda create -n ferret python=3.10 -y
-conda activate ferret
-pip install poetry
-poetry install
-
-pre-commit install
-
-ruff check src
-ruff format --check src
-
-docker build -t ferret .
-
-```
-
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+Our deployment of Ferret has been dockerized to streamline the setup process and ensure consistency across different environments. Below are the details on how to deploy Ferret locally, the processes it initiates, and how to interact with the Gradio-based UI.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
+Before proceeding with the local deployment of Ferret, it's essential to ensure that your system meets the following prerequisites:
+
+- **Docker**: Docker must be installed and running on your machine. Docker is used to containerize the Ferret environment, ensuring that it can be deployed consistently across any platform. If you haven't installed Docker yet, visit the [official Docker website](https://www.docker.com/get-started) for installation instructions tailored to your operating system.
+
+Having Docker installed is crucial for the deployment process, as it encapsulates the Ferret application and its dependencies within a container, simplifying the setup and execution steps. This approach also isolates the Ferret environment from your system, minimizing potential conflicts with existing software or dependencies.
+
+### Dockerized Deployment
+To deploy Ferret locally, utilize the following Docker commands. These steps will prepare your environment for running Ferret:
+- Build the image
+  ```bash
+  docker build -t ferret .
   ```
+- Run the image with exposure of Gradio's port
+  ```bash
+  docker run ferret -p 7860:7860
+  ```
+- Access the Gradio based UI via Web Browser - http://0.0.0.0:7860/
 
-### Installation
+### Underlying Processes
+When the `app.py` entrypoint is being run, three main processes are initiated:
+1. **Controller Thread**: Starts a controller that listens on port 10000, managing the overall application flow.
+2. **Gradio Web Server Thread**: Launches a Gradio web server, enabling the interactive UI for user interactions.
+3. **Model Worker Thread**: Begins a model worker process that handles inference tasks. This worker loads the Ferret model and performs the computational processing necessary for responding to user queries.
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+Each process operates in its own thread, ensuring efficient management of tasks and smooth user experience.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### Accessing the Gradio-based UI
+Once the Docker container is up and running, and the processes outlined above are initiated, you can access Ferret's interactive UI through the Gradio web interface. This interface allows users to interact with Ferret in real-time, engaging in visual and textual dialogues. The Gradio-based UI is designed to be intuitive, making it easy for users to explore Ferret's capabilities by uploading images and posing questions or commands related to the visual content.
 
+Usually, the Gradio UI should be accessible via http://0.0.0.0:7860/
 
+By following these guidelines, you can effectively deploy Ferret within a local environment, leveraging its advanced multimodal conversational features through a user-friendly interface.
 
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
-
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -215,69 +141,17 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- LICENSE
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Our project and its deployment on Hugging Face Spaces, including the modifications and use of the code, are based entirely on Apple Inc.'s original Ferret software and its associated licensing terms. It is crucial for users and contributors to our project to recognize and respect the copyright and licensing terms as established by Apple Inc.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p> -->
+This project is intended for research and educational purposes, aiming to explore and demonstrate the capabilities of multimodal large language models like Ferret. We encourage users to engage with our project within the bounds of Apple's licensing terms and with a commitment to fostering an environment of respect and innovation.
 
+For further details about the license and your obligations as a user or contributor, please refer to the [original license agreement](https://github.com/apple/ml-ferret/blob/main/LICENSE) provided by Apple Inc. within the Ferret repository. It is the responsibility of each individual to ensure their use of the Ferret software complies with the specified terms.
 
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []()
-* []()
-* []()
+* [🦦 Apple's Ferret Original Repository](https://github.com/apple/ml-ferret)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+## About The Future Prompters
+TODO

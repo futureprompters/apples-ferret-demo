@@ -1,3 +1,6 @@
+# Model fetched from HuggingFace
+model/
+
 # generated docs items
 docs/site/
 docs/docs/_partials/termynal.md
