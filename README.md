@@ -75,7 +75,7 @@ By deploying Ferret, we aim to **explore and demonstrate its unique capabilities
 
 Give it a shot and play with the Ferret on [🤗 HF Spaces](https://huggingface.co/spaces/FuturePrompters/apples-ferret)
 
-https://github.com/futureprompters/apples-ferret-demo/blob/main/images/ferret-demo.mp4
+https://github.com/futureprompters/apples-ferret-demo/assets/157353109/3313261c-8c40-4447-86b3-8025de048c42
 
 ## Technical Details
 
