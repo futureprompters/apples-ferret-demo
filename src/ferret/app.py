@@ -43,7 +43,7 @@ def run_gpu_monitor():
             print(result.stdout)
         else:
             print(f"Error running nvidia-smi: {result.stderr}")
-        time.sleep(10)
+        time.sleep(30)
 
 
 gpu_monitor_thread = threading.Thread(target=run_gpu_monitor)
