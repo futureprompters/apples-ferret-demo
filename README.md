@@ -97,9 +97,11 @@ Our deployment of Ferret has been dockerized to streamline the setup process and
 
 Before proceeding with the local deployment of Ferret, it's essential to ensure that your system meets the following prerequisites:
 
-- **Docker**: Docker must be installed and running on your machine. Docker is used to containerize the Ferret environment, ensuring that it can be deployed consistently across any platform. If you haven't installed Docker yet, visit the [official Docker website](https://www.docker.com/get-started) for installation instructions tailored to your operating system.
+**Docker**: Docker must be installed and running on your machine. Docker is used to containerize the Ferret environment, ensuring that it can be deployed consistently across any platform. If you haven't installed Docker yet, visit the [official Docker website](https://www.docker.com/get-started) for installation instructions tailored to your operating system.
 
 Having Docker installed is crucial for the deployment process, as it encapsulates the Ferret application and its dependencies within a container, simplifying the setup and execution steps. This approach also isolates the Ferret environment from your system, minimizing potential conflicts with existing software or dependencies.
+
+**GPU**: To load the model into the GPU, **approximately 13.5GB of VRAM is required**. This is a crucial consideration for deploying Ferret, as the intensive computational tasks performed by the model necessitate significant memory bandwidth and capacity.
 
 ### Dockerized Deployment
 To deploy Ferret locally, utilize the following Docker commands. These steps will prepare your environment for running Ferret:
