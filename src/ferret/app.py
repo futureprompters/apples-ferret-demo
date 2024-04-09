@@ -36,8 +36,6 @@ model_worker.start()
 
 def run_gpu_monitor():
     while True:
-        print_gpu_info()
-
         result = subprocess.run(
             ["nvidia-smi"], capture_output=True, text=True, shell=True
         )
