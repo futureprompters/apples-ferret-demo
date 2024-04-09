@@ -4,6 +4,7 @@ import os
 import sys
 
 import requests
+import torch
 
 from ferret.constants import LOGDIR
 
@@ -132,3 +133,16 @@ def pretty_print_semaphore(semaphore):
     if semaphore is None:
         return "None"
     return f"Semaphore(value={semaphore._value}, locked={semaphore.locked()})"
+
+
+def print_gpu_info():
+    print(f"GPU mem allocated: {torch.cuda.memory_allocated()}")
+    print(f"GPU max mem allocated: {torch.cuda.max_memory_allocated()}")
+    print(f"GPU mem reserved: {torch.cuda.memory_reserved()}")
+    print(f"GPU max mem reserved: {torch.cuda.max_memory_reserved()}")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if device.type == "cuda":
+        device_properties = torch.cuda.get_device_properties(device)
+        print(f"GPU device properties: {device_properties}")
+    else:
+        print("CUDA is not available. Check your device settings.")
