@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Push to HuggingFace Spaces
         env:
@@ -23,4 +23,4 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SPACE_USERNAME: ${{ vars.SPACE_USERNAME }}
           SPACE_NAME: ${{ vars.SPACE_NAME }}
-        run: git push --force https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$SPACE_USERNAME/$SPACE_NAME main
+        run: git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$SPACE_USERNAME/$SPACE_NAME main
