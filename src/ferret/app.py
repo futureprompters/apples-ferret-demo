@@ -3,8 +3,6 @@ import os
 import subprocess
 import time
 
-from ferret.utils import print_gpu_info
-
 
 def run_controller():
     os.system("python -m ferret.serve.controller --host 0.0.0.0 --port 10000")
