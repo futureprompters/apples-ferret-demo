@@ -127,7 +127,12 @@ For further details about the license and your obligations as a user or contribu
 * [🦦 Apple's Ferret Original Repository](https://github.com/apple/ml-ferret)
 
 ## About The Future Prompters
-TODO
+Future Prompters was created in response to the rapid changes in the market driven by artificial intelligence.
+
+We specialize in integrating AI for businesses. We leverage existing AI tools, tailoring them to your needs and creating cost-effective solutions.
+
+Keep in touch and stay informed about our newest solutions and the AI world by subscribing to our newsletter: https://bit.ly/future-news-ai
+
 
 <!-- ## Star history
 <iframe style="width:100%;height:auto;min-width:600px;min-height:400px;" src="https://star-history.com/embed?secret=Z2hwX3FMOWVMQm9HaFNEUzFmQ2JJbE5EaVl3bkdpeVlUazI3TGZpUQ==#futureprompters/apples-ferret-demo&Date" frameBorder="0"></iframe> -->
